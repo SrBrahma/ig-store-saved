@@ -1,0 +1,1 @@
+change the outdir exe to bin. looks better

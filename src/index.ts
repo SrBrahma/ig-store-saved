@@ -6,6 +6,11 @@ import globby from 'globby';
 import prompts from 'prompts';
 import { getDirDateName, getCarouselDirName, getCarouselFilename, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
 import Path from 'path';
+import { keypress } from './utils';
+import notifier from 'node-notifier';
+
+
+const programName = 'Instagram Saved Media Storer';
 
 // TODO add https://github.com/Teamwork/node-auto-launch ?
 
@@ -13,12 +18,15 @@ const ig = new IgApiClient();
 
 
 let newMediaCount = 0;
-let totalMediaCount = 1;
+let totalMediaCount = 0;
 
 const prettyMediaCounterZeroPads = 4;
-/** COf0dN0M8pU = 11 chars */
+/** COf0dN0M8pU = 11 chars
+ *
+ * We add 1 to be prettier for common users.
+*/
 function getPrettyMediaCounter(code: string) {
-  return `[${String(totalMediaCount).padStart(prettyMediaCounterZeroPads, '0')}, ${code}]`;
+  return `[${String(newMediaCount+1).padStart(prettyMediaCounterZeroPads, '0')}, ${code}]`;
 }
 // const prettyMediaCounterChars = getPrettyMediaCounter('COf0dN0M8pU').length;
 
@@ -167,8 +175,7 @@ async function parseData({ data, username }: {
 
 
 async function main() {
-  console.log('-=- Instagram Saved Media Saver -=-');
-
+  console.log(`-=- ${programName} -=-`);
 
   let logged = false;
   let username: string = '';
@@ -195,6 +202,7 @@ async function main() {
       console.log('Fazendo login...');
       await ig.simulate.preLoginFlow();
       /** const loggedInUser = */ await ig.account.login(username, password);
+
       logged = true;
 
     } catch (err) {
@@ -211,20 +219,20 @@ async function main() {
   // https://stackoverflow.com/a/58759660/10247962
   const savedFeed = ig.feed.saved();
 
-
-
-  // console.log(savedFeed.)
+  // Parse all medias
   do {
     const savedPosts = await savedFeed.items();
-    //  savedPosts.
     for (const data of savedPosts)
       await parseData({ data, username });
   }
   while (savedFeed.isMoreAvailable());
 
 
+  // Create the final text
+  let finalText;
+
   if (newMediaCount === 0)
-    console.log('Concluído! Não há mídias novas a serem adicionadas.');
+    finalText = 'Concluído! Não há mídias novas a serem adicionadas.';
   else {
     const newText = newMediaCount === 1
       ? `Foi adicionada 1 mídia nova`
@@ -232,8 +240,21 @@ async function main() {
     const totalText = totalMediaCount === 1 // no need to check 0, 0 would also fall in `newMediaCount === 0`
       ? `1 mídia`
       : `${totalMediaCount} mídias`;
-    console.log(`Concluído! ${newText} de um total de ${totalText}`);
+    finalText = `Concluído! ${newText} de um total de ${totalText}.`;
   }
+
+  // Print the final text
+  console.log(finalText);
+
+  // Notify the user beyond just the terminal
+  notifier.notify({
+    title: programName,
+    message: finalText, // Same as the print. I didn't have any better idea for the text.
+  });
+
+  // Press key to exit. Useful for windows, that will autoclose the terminal
+  console.log('Pressione qualquer tecla para fechar o programa.');
+  await keypress();
 }
 
 

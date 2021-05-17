@@ -57,7 +57,7 @@ export function getFilename({ date, code, author }: {
   // const YYYYmmDD = offsettedDate.toISOString().split('T')[0]!;
   // const HHmmSS = offsettedDate.toISOString().split('T')[1]!.split('.')[0]!;
   const dd = String(offsettedDate.getDate()).padStart(2, '0');
-  const filename = `${dd} ${author} ${code}`;
+  const filename = `${dd} [${author}] ${code}`;
 
   return filename;
 }

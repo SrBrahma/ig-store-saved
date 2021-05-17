@@ -1,14 +1,17 @@
 {
-  "name": "ig-store-saved",
-  "version": "1.0.0",
+  "name": "instagram-saved-storer",
+  "version": "1.1.0",
   "description": "",
   "main": "./dist/index.js",
   "bin": "./dist/index.js",
+  "pkg": {
+    "outputPath": "Instagram Saved Storer"
+  },
   "scripts": {
     "test": "echo \"No test specified.\"",
-    "clean": "rimraf dist exe \"media v*\"",
+    "clean": "rimraf dist \"Instagram Saved Storer\" \"media v*\"",
     "build": "npm run clean && tsc",
-    "buildExe": "npm run build && pkg ./dist/index.js --out-path ./exe",
+    "buildExe": "npm run build && mkdir \"Instagram Saved Storer\" && cp -r ./copyToExe/* \"./Instagram Saved Storer\" && pkg .",
     "major": "npm version major --no-git-tag-version",
     "minor": "npm version minor --no-git-tag-version",
     "patch": "npm version patch --no-git-tag-version",
@@ -29,12 +32,14 @@
     "instagram-private-api": "1.44.1",
     "mkdirp": "1.0.4",
     "node-downloader-helper": "1.0.18",
+    "node-notifier": "9.0.1",
     "prompts": "2.4.1"
   },
   "devDependencies": {
     "@types/download": "6.2.4",
     "@types/fs-extra": "9.0.11",
     "@types/mkdirp": "1.0.1",
+    "@types/node-notifier": "8.0.0",
     "@types/prompts": "2.0.11",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",
