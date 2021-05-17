@@ -1,17 +1,20 @@
 {
-  "name": "instagram-saved-storer",
+  "name": "instagram-saver",
   "version": "1.1.0",
   "description": "",
   "main": "./dist/index.js",
   "bin": "./dist/index.js",
+  "config": {
+    "distName": "Instagram Saver"
+  },
   "pkg": {
-    "outputPath": "Instagram Saved Storer"
+    "outputPath": "./Instagram Saver/All/Instagram Saver"
   },
   "scripts": {
     "test": "echo \"No test specified.\"",
-    "clean": "rimraf dist \"Instagram Saved Storer\" \"media v*\"",
+    "clean": "rimraf dist \"Instagram Saver\" \"media v*\"",
     "build": "npm run clean && tsc",
-    "buildExe": "npm run build && mkdir \"Instagram Saved Storer\" && cp -r ./copyToExe/* \"./Instagram Saved Storer\" && pkg .",
+    "build:exe": "npm run build && node scripts/build.js",
     "major": "npm version major --no-git-tag-version",
     "minor": "npm version minor --no-git-tag-version",
     "patch": "npm version patch --no-git-tag-version",
@@ -32,7 +35,6 @@
     "instagram-private-api": "1.44.1",
     "mkdirp": "1.0.4",
     "node-downloader-helper": "1.0.18",
-    "node-notifier": "9.0.1",
     "prompts": "2.4.1"
   },
   "devDependencies": {
@@ -46,6 +48,7 @@
     "eslint": "7.25.0",
     "eslint-config-gev": "2.0.2",
     "eslint-plugin-react": "7.23.2",
+    "fs-extra": "10.0.0",
     "pkg": "5.1.0",
     "rimraf": "^3.0.2",
     "ts-node-dev": "1.1.6",

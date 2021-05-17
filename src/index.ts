@@ -1,5 +1,5 @@
 import { IgApiClient, SavedFeedResponseMedia } from 'instagram-private-api';
-// import fs from 'fs-extra';
+// import fs from 'fs-extra'; // error with pkg, using mkdirp.
 import mkdirp from 'mkdirp';
 import { DownloaderHelper } from 'node-downloader-helper';
 import globby from 'globby';
@@ -7,10 +7,9 @@ import prompts from 'prompts';
 import { getDirDateName, getCarouselDirName, getCarouselFilename, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
 import Path from 'path';
 import { keypress } from './utils';
-import notifier from 'node-notifier';
 
 
-const programName = 'Instagram Saved Media Storer';
+const programName = 'Instagram Saver - by SrBrahma';
 
 // TODO add https://github.com/Teamwork/node-auto-launch ?
 
@@ -247,10 +246,11 @@ async function main() {
   console.log(finalText);
 
   // Notify the user beyond just the terminal
-  notifier.notify({
-    title: programName,
-    message: finalText, // Same as the print. I didn't have any better idea for the text.
-  });
+  // error in widnows. not using it.
+  // notifier.notify({
+  //   title: programName,
+  //   message: finalText, // Same as the print. I didn't have any better idea for the text.
+  // });
 
   // Press key to exit. Useful for windows, that will autoclose the terminal
   console.log('Pressione qualquer tecla para fechar o programa.');
