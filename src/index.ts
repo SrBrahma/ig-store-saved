@@ -4,7 +4,7 @@ import mkdirp from 'mkdirp';
 import { DownloaderHelper } from 'node-downloader-helper';
 import globby from 'globby';
 import prompts from 'prompts';
-import { getDirDateName, getCarouselDirName, getCarouselFilename, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
+import { getDirDateName, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
 import Path from 'path';
 import { keypress } from './utils';
 
@@ -33,7 +33,7 @@ function getPrettyMediaCounter(code: string) {
 
 const previousUserFiles: Record<string, string[] | undefined> = {};
 
-async function alreadyExists({ code, date, username, isFromCarousel = false, carouselCounter = 0, author }: {
+async function alreadyExists({ code, date, username, carouselCounter, author }: {
   author: string;
   code: string;
   date: Date;
@@ -45,9 +45,8 @@ async function alreadyExists({ code, date, username, isFromCarousel = false, car
   if (!previousUserFiles[dirName])
     previousUserFiles[dirName] = await globby(getMediaUserDateDirRelPath({ username, date }));
 
-  const regex = isFromCarousel
-    ? new RegExp(`${getCarouselDirName({ author, code, date })}/${getCarouselFilename({ carouselCounter })}`)
-    : new RegExp(getFilename({ author, code, date }));
+  const regex = new RegExp(getFilename({ author, code, date, carouselCounter }));
+  // ? new RegExp(`${getCarouselDirName({ author, code, date })}/${getCarouselFilename({ carouselCounter })}`)
 
   const exists = !!(previousUserFiles[dirName]!.find(filename => filename.search(regex) !== -1));
 
@@ -55,26 +54,22 @@ async function alreadyExists({ code, date, username, isFromCarousel = false, car
 }
 
 /** Will store on the local machine the media. */
-async function saveMediaFile({ code, date, url, username, isFromCarousel = false, carouselCounter = 0, author }: {
+async function saveMediaFile({ code, date, url, username, carouselCounter, author }: {
   author: string;
   code: string;
   date: Date;
   url: string;
-  isFromCarousel?: boolean;
   carouselCounter?: number;
   username: string;
 }) {
   // If we need, we can fetch the file extension from the url with the regex "/\.\w+\?/". This will output for ex ".mp4"
 
-  const outDirPath = isFromCarousel
-    ? Path.join(getMediaUserDateDirRelPath({ username, date }), getCarouselDirName({ author, date, code }))
-    : Path.join(getMediaUserDateDirRelPath({ username, date }));
+  const outDirPath = Path.join(getMediaUserDateDirRelPath({ username, date }));
+  // Path.join(getMediaUserDateDirRelPath({ username, date }), getCarouselDirName({ author, date, code }))
 
   await mkdirp(outDirPath);
 
-  const filename = isFromCarousel
-    ? getCarouselFilename({ carouselCounter })
-    : getFilename({ author, code, date });
+  const filename = getFilename({ author, code, date, carouselCounter });
 
   const download = new DownloaderHelper(url, outDirPath, {
     // override: ?
@@ -97,17 +92,16 @@ async function parseData({ data, username }: {
 }): Promise<void> {
 
   /** Stores the file if not already stored. */
-  async function saveIfDontExist({ url, storingMessage, isFromCarousel, carouselCounter }: {
+  async function saveIfDontExist({ url, storingMessage, carouselCounter }: {
     url: string;
     /** If file doesn't exist, will print this before storing the file. The media counter
      * will be appended to the beggining of the string. */
     storingMessage: string;
-    isFromCarousel?: boolean;
     carouselCounter?: number;
   }): Promise<void> {
     if (!(await alreadyExists({ code, date, username, author }))) {
       console.log(`${getPrettyMediaCounter(code)} ${storingMessage}`);
-      await saveMediaFile({ code, url, date, username, author, isFromCarousel, carouselCounter });
+      await saveMediaFile({ code, url, date, username, author, carouselCounter });
       newMediaCount++; // New file!
     }
     totalMediaCount++;
@@ -143,7 +137,7 @@ async function parseData({ data, username }: {
         const url = media.image_versions2.candidates[0]?.url;
         if (!url)
           throw `Image without URL! Carousel code = ${code}, counter = ${carouselCounter}`;
-        await saveIfDontExist({ url, carouselCounter, isFromCarousel: true,
+        await saveIfDontExist({ url, carouselCounter,
           storingMessage: `Salvando imagem do carrossel (${carouselCounter++})...` });
       }
       else if (media.media_type === 2) { // Video
@@ -151,7 +145,7 @@ async function parseData({ data, username }: {
         if (!url)
           throw `Video without url! Carousel code = ${code}, counter = ${carouselCounter}`;
 
-        await saveIfDontExist({ url, carouselCounter, isFromCarousel: true,
+        await saveIfDontExist({ url, carouselCounter,
           storingMessage: `Salvando vídeo do carrossel (${carouselCounter++})...` });
       }
       else {
