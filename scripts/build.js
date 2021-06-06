@@ -1,33 +1,42 @@
-// Won't rimraf existing data.
-
 const {exec} = require('pkg')
 const Path = require('path')
 const packageName = require('../package.json').name
-const distName = require('../package.json').config.distName ?? 'bin'
+const distDir = require('../package.json').config.distDir
 const fse = require('fs-extra')
 
-const exePath = Path.join(__dirname, '..', distName);
 
-function pathInAll(name = '') { return Path.join(exePath, 'All', distName, name) }
-function pathInWin(name = '') { return Path.join(exePath, 'Windows', distName, name) }
-function pathInLinux(name = '') { return Path.join(exePath, 'Linux', distName, name) }
-function pathInMacOS(name = '') { return Path.join(exePath, 'MacOS', distName, name) }
+if (!distDir)
+  throw new Error('distName is not set!')
+
+
+const exePath = Path.join(__dirname, '..', distDir);
+const pathAll = Path.join(exePath, 'All')
+
+function pathInAll(name = '') { return Path.join(pathAll, distDir, name) }
+function pathInWin(name = '') { return Path.join(exePath, 'Windows', distDir, name) }
+function pathInLinux(name = '') { return Path.join(exePath, 'Linux', distDir, name) }
+function pathInMacOS(name = '') { return Path.join(exePath, 'MacOS', distDir, name) }
 
 
 (async () => {
-  // Build the executables
-  await exec([
-    Path.join(__dirname, '..'),
+
+  // Ensure we cleaned previous build.
+  fse.remove(exePath)
+
+  // Build the executables. exec is a function from pkg package, not execa!
+  await exec([Path.join(__dirname, '..')])
     // Path.join(__dirname, '..', 'dist', 'index.js'),
   // '--out-path', execPath
-])
+
 
   // Copy contents
   // fse.copySync(Path.join(__dirname, '..', 'copyToExe'), pathInExec(''))
+  fse.moveSync(pathInAll(packageName + '-win.exe'), pathInWin(distDir + '.exe'));
+  fse.moveSync(pathInAll(packageName + '-linux'), pathInLinux(distDir));
+  fse.moveSync(pathInAll(packageName + '-macos'), pathInMacOS(distDir));
 
-  fse.copySync(pathInAll(packageName + '-win.exe'), pathInWin(distName + '.exe'));
-  fse.copySync(pathInAll(packageName + '-linux'), pathInLinux(distName));
-  fse.copySync(pathInAll(packageName + '-macos'), pathInMacOS(distName));
+  // Remove 'All' directory.
+  fse.remove(pathAll)
 
 })()
 

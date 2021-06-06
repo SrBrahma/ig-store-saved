@@ -15,6 +15,7 @@ import { timestampOffsetMinutes } from './consts';
 /* Careful with globby: https://github.com/sindresorhus/globby/issues/155#issuecomment-727533529
  *
  * We are using relative paths and Path.posix due to the issue above. */
+// EDIT: as we are actually using cwd instead of the glob pattern, the posix may not be needed.
 
 
 /** Naming it media vX so we can change the version for breaking changes without
@@ -23,25 +24,11 @@ export const mediaDirName = 'media v2';
 
 
 
-export function getMediaUserDirRelPath({ username, forcePosix = false }: {
-  username: string;
-  /** Set forcePosix: true for globby. Else leave false for automatic path joining */
-  forcePosix?: boolean;
-}): string {
-  return forcePosix ? Path.posix.join(mediaDirName, username) : Path.join(mediaDirName, username);
-}
-
-
-
-export function getMediaUserDateDirRelPath({ username, date, forcePosix = false }: {
+export function getMediaUserDateDirRelPath({ username, date }: {
   username: string;
   date: Date;
-  /** Set forcePosix: true for globby. Else leave false for automatic path joining */
-  forcePosix?: boolean;
 }): string {
-  return forcePosix
-    ? Path.posix.join(getMediaUserDirRelPath({ username, forcePosix }), getDateDirName({ date }))
-    : Path.join(getMediaUserDirRelPath({ username, forcePosix }), getDateDirName({ date }));
+  return Path.join(mediaDirName, username, getDateDirName({ date }));
 }
 
 

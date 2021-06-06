@@ -45,7 +45,7 @@ async function alreadyExists({ code, date, username, carouselCounter, author }: 
 
   if (!previousUserFiles[dirName])
     previousUserFiles[dirName] = await globby('', {
-      cwd: Path.posix.join(process.cwd(), getMediaUserDateDirRelPath({ username, date, forcePosix: true })),
+      cwd: Path.posix.join(process.cwd(), getMediaUserDateDirRelPath({ username, date })),
     });
 
   const filename = getFilename({ author, code, date, carouselCounter });

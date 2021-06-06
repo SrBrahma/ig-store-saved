@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "bin": "./dist/index.js",
   "config": {
-    "distName": "Instagram Saver"
+    "distDir": "Instagram Saver"
   },
   "pkg": {
     "outputPath": "./Instagram Saver/All/Instagram Saver"
