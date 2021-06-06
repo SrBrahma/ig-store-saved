@@ -11,6 +11,10 @@
 *
 -->
 
+# 1.2.1 (2021-06-01) - Client requirements changed
+### Changed
+* Fixed the file check existence
+
 
 # 1.2.0 (2021-06-01) - Client requirements changed
 ### Changed

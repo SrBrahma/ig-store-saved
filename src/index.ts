@@ -4,7 +4,7 @@ import mkdirp from 'mkdirp';
 import { DownloaderHelper } from 'node-downloader-helper';
 import globby from 'globby';
 import prompts from 'prompts';
-import { getDirDateName, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
+import { getDateDirName, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
 import Path from 'path';
 import { keypress } from './utils';
 
@@ -27,31 +27,39 @@ const prettyMediaCounterZeroPads = 4;
 function getPrettyMediaCounter(code: string) {
   return `[${String(newMediaCount+1).padStart(prettyMediaCounterZeroPads, '0')}, ${code}]`;
 }
-// const prettyMediaCounterChars = getPrettyMediaCounter('COf0dN0M8pU').length;
-
 
 
 const previousUserFiles: Record<string, string[] | undefined> = {};
+
+
 
 async function alreadyExists({ code, date, username, carouselCounter, author }: {
   author: string;
   code: string;
   date: Date;
-  isFromCarousel?: boolean;
   carouselCounter?: number;
   username: string;
 }): Promise<boolean> {
-  const dirName = getDirDateName({ date });
+
+  const dirName = getDateDirName({ date });
+
   if (!previousUserFiles[dirName])
-    previousUserFiles[dirName] = await globby(getMediaUserDateDirRelPath({ username, date }));
+    previousUserFiles[dirName] = await globby('', {
+      cwd: Path.posix.join(process.cwd(), getMediaUserDateDirRelPath({ username, date, forcePosix: true })),
+    });
 
-  const regex = new RegExp(getFilename({ author, code, date, carouselCounter }));
-  // ? new RegExp(`${getCarouselDirName({ author, code, date })}/${getCarouselFilename({ carouselCounter })}`)
+  const filename = getFilename({ author, code, date, carouselCounter });
 
-  const exists = !!(previousUserFiles[dirName]!.find(filename => filename.search(regex) !== -1));
-
-  return exists;
+  // We use search because the filename doesn't include the extension
+  const index = previousUserFiles[dirName]?.findIndex(existingFilename => existingFilename.search(filename)) ?? -1;
+  if (index !== -1) {
+    previousUserFiles[dirName]!.splice(index, 1); // Remove it for faster finding of next items
+    return true;
+  }
+  return false;
 }
+
+
 
 /** Will store on the local machine the media. */
 async function saveMediaFile({ code, date, url, username, carouselCounter, author }: {
@@ -63,7 +71,6 @@ async function saveMediaFile({ code, date, url, username, carouselCounter, autho
   username: string;
 }) {
   // If we need, we can fetch the file extension from the url with the regex "/\.\w+\?/". This will output for ex ".mp4"
-
   const outDirPath = Path.join(getMediaUserDateDirRelPath({ username, date }));
   // Path.join(getMediaUserDateDirRelPath({ username, date }), getCarouselDirName({ author, date, code }))
 
@@ -72,16 +79,11 @@ async function saveMediaFile({ code, date, url, username, carouselCounter, autho
   const filename = getFilename({ author, code, date, carouselCounter });
 
   const download = new DownloaderHelper(url, outDirPath, {
-    // override: ?
-    fileName: {
-      name: filename,
-      // ext, // dont define to keep it
-    } as any,
+    fileName: { name: filename } as any,
     override: true,
   });
 
   await download.start();
-
 }
 
 
@@ -99,7 +101,7 @@ async function parseData({ data, username }: {
     storingMessage: string;
     carouselCounter?: number;
   }): Promise<void> {
-    if (!(await alreadyExists({ code, date, username, author }))) {
+    if (!(await alreadyExists({ code, date, username, author, carouselCounter }))) {
       console.log(`${getPrettyMediaCounter(code)} ${storingMessage}`);
       await saveMediaFile({ code, url, date, username, author, carouselCounter });
       newMediaCount++; // New file!
@@ -225,14 +227,14 @@ async function main() {
   let finalText;
 
   if (newMediaCount === 0)
-    finalText = 'Concluído! Não há mídias novas a serem adicionadas.';
+    finalText = `Concluído! Não há mídias novas para serem armazenadas. O total de mídias salvas é ${totalMediaCount}.`;
   else {
     const newText = newMediaCount === 1
-      ? `Foi adicionada 1 mídia nova`
-      : `Foram adicionadas ${newMediaCount} mídias novas`;
+      ? `Foi armazenada 1 mídia nova`
+      : `Foram armazenadas ${newMediaCount} mídias novas`;
     const totalText = totalMediaCount === 1 // no need to check 0, 0 would also fall in `newMediaCount === 0`
-      ? `1 mídia`
-      : `${totalMediaCount} mídias`;
+      ? `1 mídia salva`
+      : `${totalMediaCount} mídias salvas`;
     finalText = `Concluído! ${newText} de um total de ${totalText}.`;
   }
 

@@ -16,9 +16,12 @@ import { timestampOffsetMinutes } from './consts';
  *
  * We are using relative paths and Path.posix due to the issue above. */
 
+
 /** Naming it media vX so we can change the version for breaking changes without
  * messing existing local data. */
 export const mediaDirName = 'media v2';
+
+
 
 export function getMediaUserDirRelPath({ username, forcePosix = false }: {
   username: string;
@@ -28,6 +31,8 @@ export function getMediaUserDirRelPath({ username, forcePosix = false }: {
   return forcePosix ? Path.posix.join(mediaDirName, username) : Path.join(mediaDirName, username);
 }
 
+
+
 export function getMediaUserDateDirRelPath({ username, date, forcePosix = false }: {
   username: string;
   date: Date;
@@ -35,17 +40,21 @@ export function getMediaUserDateDirRelPath({ username, date, forcePosix = false 
   forcePosix?: boolean;
 }): string {
   return forcePosix
-    ? Path.posix.join(getMediaUserDirRelPath({ username, forcePosix }), getDirDateName({ date }))
-    : Path.join(getMediaUserDirRelPath({ username, forcePosix }), getDirDateName({ date }));
+    ? Path.posix.join(getMediaUserDirRelPath({ username, forcePosix }), getDateDirName({ date }))
+    : Path.join(getMediaUserDirRelPath({ username, forcePosix }), getDateDirName({ date }));
 }
 
+
+
 /** Returns the YYYY-MM parent directory of the media. */
-export function getDirDateName({ date }: {date: Date}): string {
+export function getDateDirName({ date }: {date: Date}): string {
   const offsettedDate = new Date(date.getTime() - (timestampOffsetMinutes * 60 * 1000));
   const YYYY_MM_DD = offsettedDate.toISOString().split('T')[0]!;
   const YYYY_MM = YYYY_MM_DD.substr(0, 7); // 2021-05
   return YYYY_MM;
 }
+
+
 
 /** Without extension. */
 export function getFilename({ date, code, author, carouselCounter }: {
