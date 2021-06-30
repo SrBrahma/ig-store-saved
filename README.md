@@ -10,7 +10,7 @@
   [![TypeScript](https://badgen.net/npm/types/env-var)](http://www.typescriptlang.org/)
 
 
-  A 1 week service I did for a client some time ago. It stores locally all the saved media of an Instagram account.
+  An 1 week service I did for a client some time ago. It stores locally all the saved media of an Instagram account.
   
   Previously it was a private project. Made it public just for showing.
 
