@@ -5,7 +5,6 @@ import { DownloaderHelper } from 'node-downloader-helper';
 import globby from 'globby';
 import prompts from 'prompts';
 import { getDateDirName, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
-import Path from 'path';
 import { keypress } from './utils';
 import nodeNotifier from 'node-notifier';
 
