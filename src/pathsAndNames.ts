@@ -12,12 +12,6 @@ import { timestampOffsetMinutes } from './consts';
 */
 
 
-/* Careful with globby: https://github.com/sindresorhus/globby/issues/155#issuecomment-727533529
- *
- * We are using relative paths and Path.posix due to the issue above. */
-// EDIT: as we are actually using cwd instead of the glob pattern, the posix may not be needed.
-
-
 /** Naming it media vX so we can change the version for breaking changes without
  * messing existing local data. */
 export const mediaDirName = 'media v2';
@@ -28,7 +22,7 @@ export function getMediaUserDateDirRelPath({ username, date }: {
   username: string;
   date: Date;
 }): string {
-  return Path.join(mediaDirName, username, getDateDirName({ date }));
+  return Path.join(__dirname, mediaDirName, username, getDateDirName({ date }));
 }
 
 
@@ -45,7 +39,7 @@ export function getDateDirName({ date }: {date: Date}): string {
 
 /** Without extension. */
 export function getFilename({ date, code, author, carouselCounter }: {
-  date: Date; code: string; author: string; carouselCounter?: number
+  date: Date; code: string; author: string; carouselCounter?: number;
 }): string {
   // https://stackoverflow.com/a/29774197/10247962
   const offsettedDate = new Date(date.getTime() - (timestampOffsetMinutes * 60 * 1000));
@@ -56,16 +50,3 @@ export function getFilename({ date, code, author, carouselCounter }: {
 
   return filename;
 }
-
-// The client doesn't want to have a directory no more.
-// /** Will call getFilename(). */
-// export function getCarouselDirName({ date, code, author }: {
-//   date: Date, code: string; author: string;
-// }): string {
-//   return getFilename({ date, code: code, author });
-// }
-
-// /** Will just return the carouselCounter as string. Won't include the file extension. */
-// export function getCarouselFilename({ carouselCounter }: {carouselCounter: number}): string {
-//   return String(carouselCounter);
-// }

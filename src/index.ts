@@ -7,6 +7,7 @@ import prompts from 'prompts';
 import { getDateDirName, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
 import Path from 'path';
 import { keypress } from './utils';
+import nodeNotifier from 'node-notifier';
 
 
 const programName = 'Instagram Saver - by SrBrahma';
@@ -25,7 +26,7 @@ const prettyMediaCounterZeroPads = 4;
  * We add 1 to be prettier for common users.
 */
 function getPrettyMediaCounter(code: string) {
-  return `[${String(newMediaCount+1).padStart(prettyMediaCounterZeroPads, '0')}, ${code}]`;
+  return `[${String(newMediaCount + 1).padStart(prettyMediaCounterZeroPads, '0')}, ${code}]`;
 }
 
 
@@ -45,13 +46,16 @@ async function alreadyExists({ code, date, username, carouselCounter, author }: 
 
   if (!previousUserFiles[dirName])
     previousUserFiles[dirName] = await globby('*', {
-      cwd: Path.posix.join(process.cwd(), getMediaUserDateDirRelPath({ username, date })),
+      cwd: getMediaUserDateDirRelPath({ username, date }),
     });
 
   const filename = getFilename({ author, code, date, carouselCounter });
 
-  // We use search because the filename doesn't include the extension
-  const index = previousUserFiles[dirName]?.findIndex(existingFilename => existingFilename.search(filename)) ?? -1;
+  // Note that the filename doesn't include the extension.
+  /** -1 if no match is found, the file is new. */
+  const index: number = previousUserFiles[dirName]?.findIndex(existingFilename => existingFilename.includes(filename))
+    ?? -1;
+
   if (index !== -1) {
     previousUserFiles[dirName]!.splice(index, 1); // Remove it for faster finding of next items
     return true;
@@ -71,8 +75,7 @@ async function saveMediaFile({ code, date, url, username, carouselCounter, autho
   username: string;
 }) {
   // If we need, we can fetch the file extension from the url with the regex "/\.\w+\?/". This will output for ex ".mp4"
-  const outDirPath = Path.join(getMediaUserDateDirRelPath({ username, date }));
-  // Path.join(getMediaUserDateDirRelPath({ username, date }), getCarouselDirName({ author, date, code }))
+  const outDirPath = getMediaUserDateDirRelPath({ username, date });
 
   await mkdirp(outDirPath);
 
@@ -89,7 +92,7 @@ async function saveMediaFile({ code, date, url, username, carouselCounter, autho
 
 // Using if/elseif instead of switches because they were looking ugly.
 async function parseData({ data, username }: {
-  data: SavedFeedResponseMedia,
+  data: SavedFeedResponseMedia;
   username: string;
 }): Promise<void> {
 
@@ -120,16 +123,12 @@ async function parseData({ data, username }: {
     if (!url)
       throw `Image without url! Media code = ${code}`;
     await saveIfDontExist({ url, storingMessage: 'Salvando imagem...' });
-  }
-
-  else if (data.media_type === 2) { // Video
+  } else if (data.media_type === 2) { // Video
     const url = data.video_versions?.[0]?.url;
     if (!url)
       throw `Video without url! Media code = ${code}`;
     await saveIfDontExist({ url, storingMessage: 'Salvando vídeo...' });
-  }
-
-  else if (data.media_type === 8) { // Caroussel
+  } else if (data.media_type === 8) { // Caroussel
     const carousel_media = data.carousel_media ?? [];
     let carouselCounter = 1;
 
@@ -139,18 +138,20 @@ async function parseData({ data, username }: {
         const url = media.image_versions2.candidates[0]?.url;
         if (!url)
           throw `Image without URL! Carousel code = ${code}, counter = ${carouselCounter}`;
-        await saveIfDontExist({ url, carouselCounter,
-          storingMessage: `Salvando imagem do carrossel (${carouselCounter++})...` });
-      }
-      else if (media.media_type === 2) { // Video
+        await saveIfDontExist({
+          url, carouselCounter,
+          storingMessage: `Salvando imagem do carrossel (${carouselCounter++})...`,
+        });
+      } else if (media.media_type === 2) { // Video
         const url = media.video_versions?.[0]?.url;
         if (!url)
           throw `Video without url! Carousel code = ${code}, counter = ${carouselCounter}`;
 
-        await saveIfDontExist({ url, carouselCounter,
-          storingMessage: `Salvando vídeo do carrossel (${carouselCounter++})...` });
-      }
-      else {
+        await saveIfDontExist({
+          url, carouselCounter,
+          storingMessage: `Salvando vídeo do carrossel (${carouselCounter++})...`,
+        });
+      } else {
         throw `Unknown media_type = ${media.media_type} inside the carousel of code =${code}`;
       }
 
@@ -163,7 +164,6 @@ async function parseData({ data, username }: {
   }
 
 }
-
 
 
 
@@ -243,10 +243,10 @@ async function main() {
 
   // Notify the user beyond just the terminal
   // error in widnows. not using it.
-  // notifier.notify({
-  //   title: programName,
-  //   message: finalText, // Same as the print. I didn't have any better idea for the text.
-  // });
+  nodeNotifier.notify({
+    title: programName,
+    message: finalText, // Same as the print. I didn't have any better idea for the text.
+  });
 
   // Press key to exit. Useful for windows, that will autoclose the terminal
   console.log('Pressione qualquer tecla para fechar o programa.');
@@ -255,7 +255,16 @@ async function main() {
 
 
 main()
-  .catch(err => {
+  .catch(async err => {
     console.error(err.message ?? err);
+    nodeNotifier.notify({
+      title: programName,
+      message: 'Erro! Leia o terminal.',
+    });
+
+    // Press key to exit. Useful for windows, that will autoclose the terminal
+    console.log('Pressione qualquer tecla para fechar o programa.');
+    await keypress();
+
     process.exit(1);
   });
