@@ -24,7 +24,7 @@ function pathInMacOS(name = '') { return Path.join(exePath, 'MacOS', distDir, na
   fse.remove(exePath)
 
   // Build the executables. exec is a function from pkg package, not execa!
-  await exec([Path.join(__dirname, '..')])
+  await exec([Path.join(__dirname, '..'), '-C', 'Brotli'])
     // Path.join(__dirname, '..', 'dist', 'index.js'),
   // '--out-path', execPath
 

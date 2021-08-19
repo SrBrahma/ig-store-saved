@@ -22,7 +22,7 @@ export function getMediaUserDateDirRelPath({ username, date }: {
   username: string;
   date: Date;
 }): string {
-  return Path.join(__dirname, mediaDirName, username, getDateDirName({ date }));
+  return Path.join(mediaDirName, username, getDateDirName({ date }));
 }
 
 
