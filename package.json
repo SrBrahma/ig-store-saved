@@ -30,9 +30,9 @@
     "globby": "11.0.4",
     "instagram-private-api": "1.45.1",
     "mkdirp": "1.0.4",
-    "node-downloader-helper": "1.0.18",
+    "node-downloader-helper": "1.0.19",
     "node-notifier": "10.0.0",
-    "prompts": "2.4.1"
+    "prompts": "2.4.2"
   },
   "devDependencies": {
     "@types/mkdirp": "1.0.2",
@@ -41,12 +41,12 @@
     "@typescript-eslint/eslint-plugin": "4.29.2",
     "@typescript-eslint/parser": "4.29.2",
     "eslint": "7.32.0",
-    "eslint-config-gev": "2.8.2",
+    "eslint-config-gev": "2.15.0",
     "eslint-plugin-react": "7.24.0",
     "fs-extra": "10.0.0",
-    "pkg": "5.3.1",
+    "pkg": "5.4.0",
     "rimraf": "^3.0.2",
     "ts-node-dev": "1.1.8",
-    "typescript": "4.3.5"
+    "typescript": "4.4.4"
   }
 }

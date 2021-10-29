@@ -1,12 +1,12 @@
+import globby from 'globby';
 import { IgApiClient, SavedFeedResponseMedia } from 'instagram-private-api';
 // import fs from 'fs-extra'; // error with pkg, using mkdirp.
 import mkdirp from 'mkdirp';
 import { DownloaderHelper } from 'node-downloader-helper';
-import globby from 'globby';
+import nodeNotifier from 'node-notifier';
 import prompts from 'prompts';
 import { getDateDirName, getFilename, getMediaUserDateDirRelPath } from './pathsAndNames';
 import { keypress } from './utils';
-import nodeNotifier from 'node-notifier';
 
 
 const programName = 'Instagram Saver - by SrBrahma';
@@ -52,7 +52,7 @@ async function alreadyExists({ code, date, username, carouselCounter, author }: 
 
   // Note that the filename doesn't include the extension.
   /** -1 if no match is found, the file is new. */
-  const index: number = previousUserFiles[dirName]?.findIndex(existingFilename => existingFilename.includes(filename))
+  const index: number = previousUserFiles[dirName]?.findIndex((existingFilename) => existingFilename.includes(filename))
     ?? -1;
 
   if (index !== -1) {
@@ -254,7 +254,7 @@ async function main() {
 
 
 main()
-  .catch(async err => {
+  .catch(async (err) => {
     console.error(err.message ?? err);
     nodeNotifier.notify({
       title: programName,
